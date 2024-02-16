@@ -5,16 +5,27 @@ import handTrackingModule as htm
 import math
 import subprocess
 
+def set_volume(volume):
+    subprocess.run(["pactl", "set-sink-volume", "@DEFAULT_SINK@", str(int(volume))])
+
+# Volume PipeWire/PulseAudio
+volRange = [0, 65536]
+minVol = volRange[0]
+maxVol = volRange[1]
+vol = 0
+barVol = 400
+percentVol = 0
+
+# Video capture settings
 cap = cv2.VideoCapture(0)
 wCam, hCam = 640, 480
 cap.set(3, wCam)
 cap.set(4, hCam)
 pTime = 0
 
+# Hand detector module
 detector = htm.handDetector(detectionCon=0.7)
-
-# Volume PipeWire/PulseAudio
-
+    
 while True:
     success, img = cap.read()
 
@@ -39,13 +50,22 @@ while True:
             cv2.circle(img, (cx,cy), 8, (0,255,0), cv2.FILLED)
 
         # Hand range 50 -> 300
-        # Volume range
-        
+        # Volume range 0 -> 65536
+        vol = np.interp(length, [50,300], [minVol, maxVol])
+        barVol = np.interp(length, [50,300], [400, 150])
+        percentVol = np.interp(length, [50,300], [0,100])
+        set_volume(vol)
+
+    # Volume bar
+    cv2.rectangle(img, (40,150), (85,400), (0,0,0), 3)
+    cv2.rectangle(img, (40,int(barVol)), (85,400), (0,0,0), cv2.FILLED)
+    cv2.putText(img, f'{int(percentVol)} %', (50, 430), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
+    
     # Fps
     cTime = time.time()
     fps = 1 / (cTime - pTime)
     pTime = cTime
-    cv2.putText(img, f'FPS: {int(fps)}', (10, 30), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
+    cv2.putText(img, f'FPS: {int(fps)}', (10, 30), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
 
 
     cv2.imshow("Image", img)
