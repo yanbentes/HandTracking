@@ -2,7 +2,33 @@ import cv2
 import time
 import os
 import handTrackingModule as htm
+import simpleaudio as sa
 
+current_play_obj = None
+
+def playSound(num, force_play=False):
+    global current_play_obj
+    
+    sound_files = {
+        1: 'sounds/mixkit-arcade-game-complete-or-approved-mission-205.wav',
+        2: 'sounds/mixkit-casino-bling-achievement-2067.wav',
+        3: 'sounds/mixkit-game-flute-bonus-2313.wav',
+        4: 'sounds/mixkit-flute-alert-2307.wav',
+        5: 'sounds/mixkit-ominous-drums-227.wav',
+    }
+    sound_file = sound_files.get(num)
+    
+    if sound_file:
+        if current_play_obj is not None:
+            if current_play_obj.is_playing() and not force_play:
+                return
+            elif force_play:
+                current_play_obj.stop()
+        
+        # Play the new sound
+        wave_obj = sa.WaveObject.from_wave_file(sound_file)
+        current_play_obj = wave_obj.play()
+        
 # Video settings
 cap = cv2.VideoCapture(0)
 wCam, hCam = 640, 480
@@ -48,12 +74,13 @@ while True:
         # print(fingers)
         totalFingers = fingers.count(1)
         cv2.putText(img, f'{int(totalFingers)}', (10, 60), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
+        playSound(totalFingers)
         
     # Fps
     cTime = time.time()
     fps = 1 / (cTime - pTime)
     pTime = cTime
-    cv2.putText(img, f'FPS: {int(fps)}', (10, 30), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
+    cv2.putText(img, f'FPS: {int(fps)}', (10, 30), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
 
     cv2.imshow("Image", img)
     key = cv2.waitKey(1)
