@@ -47,7 +47,7 @@ while True:
                 
         # print(fingers)
         totalFingers = fingers.count(1)
-        cv2.putText(img, f'{int(totalFingers)}', (10, 60), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
+        cv2.putText(img, f'Count: {int(totalFingers)}', (10, 60), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
         
     # Fps
     cTime = time.time()
